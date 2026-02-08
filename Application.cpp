@@ -3,6 +3,7 @@
 #include "classes/TicTacToe.h"
 #include "classes/Checkers.h"
 #include "classes/Othello.h"
+#include "classes/ConnectFour.h"
 
 namespace ClassGame {
         //
@@ -55,6 +56,21 @@ namespace ClassGame {
                     if (ImGui::Button("Start Othello")) {
                         game = new Othello();
                         game->setUpBoard();
+                    }
+                    if (ImGui::Button("Start Connect 4: 2 Player")){
+                        game = new ConnectFour();
+                        game->_gameOptions.AIPlaying = false;
+                        game->setUpBoard();
+                    }
+                    if (ImGui::Button("Start Connect 4: Player vs. AI")){
+                        game = new ConnectFour();
+                        game->_gameOptions.AIPlaying = true;
+                        game->setUpBoard();
+                    }
+                    if (ImGui::Button("Start Connect 4: AI vs. Player")){
+                        game = new ConnectFour();
+                        game->setUpBoard();
+                        game->setAIPlayer(0);
                     }
                 } else {
                     ImGui::Text("Current Player Number: %d", game->getCurrentPlayer()->playerNumber());
