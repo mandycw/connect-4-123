@@ -62,12 +62,12 @@ namespace ClassGame {
                         game->_gameOptions.AIPlaying = false;
                         game->setUpBoard();
                     }
-                    if (ImGui::Button("Start Connect 4: Player vs. AI")){
+                    if (ImGui::Button("Start Connect 4: Player[P1] vs. AI[2]")){
                         game = new ConnectFour();
                         game->_gameOptions.AIPlaying = true;
                         game->setUpBoard();
                     }
-                    if (ImGui::Button("Start Connect 4: AI vs. Player")){
+                    if (ImGui::Button("Start Connect 4: AI[P1] vs. Player[P2]")){
                         game = new ConnectFour();
                         game->setUpBoard();
                         game->setAIPlayer(0);

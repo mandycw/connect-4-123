@@ -172,11 +172,14 @@ void ConnectFour::updateAI(){
     }
         //if we found a valid move, check it
         if(moveIndex != -1 && state[moveIndex] == '0'){
+            //try the move
             state[moveIndex] = '2';
-            int newVal = -negamax(state, 7, -1000000, 1000000, HUMAN_PLAYER);
+            int newVal = -negamax(state, 6, -1000000, 1000000, HUMAN_PLAYER);
+            //backtrack
             state[moveIndex] = '0';
             if (newVal > bestVal){
                 bestVal = newVal;
+                //store best move
                 bestMove = _grid->getSquare(i, moveIndex/ 7);
             }
         }
@@ -212,7 +215,7 @@ int calculateScore(int row, int col, std::string& state, int rowStep, int colSte
 
     if (bad == 2 && empty == 2){score -= 21;}
     if (bad == 3 && empty == 1){score -= 501;}
-    if (bad == 4){score -= 0000;}
+    if (bad == 4){score -= 10000;}
 
     return score;
 }
@@ -241,9 +244,11 @@ int aiBoardEval(std::string& state){
 
     //diagonal
     for (int y = 0; y < 3; ++y) {
+        //tl to br
         for (int x = 0; x < 4; ++x) {
             score += calculateScore(y, x, state, 1, 1); 
         }
+        //tr to bl
         for (int x = 3; x < 7; ++x) {
             score += calculateScore(y, x, state, 1, -1); 
         }
@@ -253,11 +258,12 @@ int aiBoardEval(std::string& state){
 }
 
 int ConnectFour::negamax(std::string& state, int depth, int alpha, int beta, int playerColor){
+    //check for terminal state or depth limit
     int eval = aiBoardEval(state);
     if(std::abs(eval) >= 100000 || depth == 0){
         return playerColor * eval;
     }
-    
+    //draw
     if (state.find('0') == std::string::npos) return 0;
 
     int bestVal = -1000000;
@@ -270,14 +276,17 @@ int ConnectFour::negamax(std::string& state, int depth, int alpha, int beta, int
             break;
         }
     }
+        
         if(moveIndex != -1 &&state[moveIndex] == '0'){
             state[moveIndex] = playerColor == HUMAN_PLAYER ? '1' : '2';
+            //flip playercolor and negate score for opps perspective
             int newVal = -negamax(state, depth - 1, -beta, -alpha, -playerColor);
+            //backtrack
             state[moveIndex] = '0';
             if (newVal > bestVal){
                 bestVal = newVal;
             }     
-        
+            //alpha beta pruning
             alpha = std::max(alpha, bestVal);
             if (alpha >=beta){
                 break;

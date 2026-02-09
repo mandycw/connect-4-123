@@ -1,11 +1,7 @@
-Using the provided code that can be downloaded from this github add a new class that inherits from game.cpp in the same way TicTacToe.cpp does and implement a working version of the game Connect 4. The game should be added as a fourth choice from the menu so the choices are Tic Tac Toe, Checkers, Othello and now Connect 4.
+Windows
 
-The game must be playable by both by 2 people and vs. an AI. Your implementation must check for the winning condition, and display that on the right hand side the same way the current setup does for tic-tac-toe. The stopGame() method is expected to clean up and delete any memory allocated.
+The base game is implemented in a similar fashion to TicTacToe.cpp, where the size of the grid and win conditions are most different. 
 
-Look at the new Grid.cpp class and see how it is used in Checkers.cpp for a good understanding about laying out a useable grid.
-
-For extra credit, when a game piece is added to the board, make it animate into place instead of just appearing in it's final spot.
-
-Graphic files are provided for the game pieces called yellow.png and red.png.
-
-For the submission, create a new github based on the above code-base and provide a link to that along with a complete readme.md on how your implementation works.
+aiBoardEval uses calculateScore to check for sequences of 4 and based on the pieces in that sequence assigns it a score, favoring the center of the board. 
+negamax finds the lowest empty cell in the column, and if its a valid move, checks it. Alpha beta pruning is then used to optimize negamax. 
+updateAI uses similar logic to negamax, where the lowest empty cell in the column is found, then if a valid move is found, uses negamax to find the best move and stores it to play.
