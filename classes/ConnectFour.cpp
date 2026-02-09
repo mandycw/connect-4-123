@@ -9,7 +9,6 @@ ConnectFour::~ConnectFour(){
     delete _grid;
 }
 
-
 Bit* ConnectFour::PieceForPlayer(const int playerNumber){
     Bit *bit = new Bit();
     bit->LoadTextureFromFile(playerNumber ==  AI_PLAYER ? "yellow.png" : "red.png");
@@ -82,49 +81,46 @@ Player *ConnectFour::ownerAt(int index) const{
 }
 
 Player *ConnectFour::checkForWinner(){
-    //check horizontal
+
+    
     for (int y = 0; y < 6 ; ++y){
         for (int x = 0; x < 4; ++x){
             Player *winner = ownerAt(y * 7 + x);
-            //add to x
-            if (winner && winner == ownerAt(y * 7 + x + 1) && winner == ownerAt(y * 7 + x + 2) && winner == ownerAt(y * 7 + x + 3)){
-                return winner;
-            }
-        }
-    }
-    //check vertical
-    for (int x = 0; x < 7 ; ++x){
-        for (int y = 0; y < 3; ++y){
-            Player *winner = ownerAt(y * 7 + x);
-            //add to y
-            if (winner && winner == ownerAt((y + 1)* 7 + x) && winner == ownerAt((y + 2)* 7 + x) && winner == ownerAt((y + 3) * 7 + x)){
-                return winner;
-            }
+            //horizontal
+            if (winner && winner == ownerAt(y * 7 + x + 1) && 
+                          winner == ownerAt(y * 7 + x + 2) && 
+                          winner == ownerAt(y * 7 + x + 3)) return winner;
+            
         }
     }
 
-    //check diagonal
-    //top left to bot right
-    //y < 3 and x < 4 to not go out of bounds
-    for (int y = 0; y < 3; ++y){
-        for (int x = 0; x < 4; ++x){
+    //vertical
+    for (int y = 0; y < 3; ++y) {
+        for (int x = 0; x < 7; ++x) {
             Player *winner = ownerAt(y * 7 + x);
-            if (winner && winner == ownerAt((y + 1) * 7 + (x + 1)) && winner == ownerAt((y + 2) * 7 + (x + 2)) && winner == ownerAt((y + 3) * 7 + (x + 3))){
-                return winner;
-            }
+            if (winner && winner == ownerAt((y + 1) * 7 + x) && 
+                          winner == ownerAt((y + 2) * 7 + x) && 
+                          winner == ownerAt((y + 3) * 7 + x)) return winner;
         }
     }
-
-    //top right to bot left
-    for (int y = 0; y < 3; ++y){
-        for(int x = 3; x < 7; ++x){
+    //tl to bl
+    for (int y = 0; y < 3; ++y) {
+        for (int x = 0; x < 4; ++x) {
             Player *winner = ownerAt(y * 7 + x);
-            if (winner && winner == ownerAt((y + 1) * 7 + (x-1)) && winner == ownerAt((y + 2) * 7 + (x-2)) && winner == ownerAt((y + 3) * 7 + (x-3))){
-                return winner;
-            }
+            if (winner && winner == ownerAt((y + 1) * 7 + (x + 1)) && 
+                          winner == ownerAt((y + 2) * 7 + (x + 2)) && 
+                          winner == ownerAt((y + 3) * 7 + (x + 3))) return winner;
         }
     }
-
+    //tr to bl
+    for (int y = 0; y < 3; ++y) {
+        for (int x = 3; x < 7; ++x) {
+            Player *winner = ownerAt(y * 7 + x);
+            if (winner && winner == ownerAt((y + 1) * 7 + (x - 1)) && 
+                          winner == ownerAt((y + 2) * 7 + (x - 2)) && 
+                          winner == ownerAt((y + 3) * 7 + (x - 3))) return winner;
+        }
+    }
     return nullptr;
 }
 
@@ -155,18 +151,138 @@ std::string ConnectFour::stateString(){
 }
 
 void ConnectFour::setStateString(const std::string &s){
-    _grid->forEachSquare([&](ChessSquare* square, int x, int y) {
-        int index = y * 7 + x;
-        int playerNumber = s[index] - '0';
-        if (playerNumber) {
-            square->setBit(PieceForPlayer(playerNumber - 1) );
-        } else {
-            square->setBit(nullptr);
-        }
-    });
+    return;
     
 }
 
 void ConnectFour::updateAI(){
+    BitHolder* bestMove = nullptr;
+    std::string state = stateString();
+    int bestVal = -1000000;
+
+    //for each column, check best move
+    for (int i = 0; i < 7; ++i){
+        int moveIndex = -1;
+        //for each row, bottom up
+        for (int y = 5; y >= 0; --y) {
+            if (state[y * 7 + i] == '0') {
+                moveIndex = y * 7 + i;
+                break;
+        }
+    }
+        //if we found a valid move, check it
+        if(moveIndex != -1 && state[moveIndex] == '0'){
+            state[moveIndex] = '2';
+            int newVal = -negamax(state, 7, -1000000, 1000000, HUMAN_PLAYER);
+            state[moveIndex] = '0';
+            if (newVal > bestVal){
+                bestVal = newVal;
+                bestMove = _grid->getSquare(i, moveIndex/ 7);
+            }
+        }
+    }
+    if(bestMove) {
+        if (actionForEmptyHolder(*bestMove)) {
+        }
+    }
+}
+
+int calculateScore(int row, int col, std::string& state, int rowStep, int colStep){
+    int good = 0; //for
+    int bad = 0; //against
+    int empty = 0; //netural
+
+    //check 4 in a row
+    for (int i = 0; i < 4; ++i){
+        //calculate the current row and column
+        int currRow = row + (i * rowStep);
+        int currCol = col + (i * colStep);
+        int index = currRow * 7 + currCol;
+        char cell = state[index];
+
+        if (cell == '2') good++;
+        else if (cell == '1') bad++;
+        else empty++;
+    }
+
+    int score = 0;
+    if(good == 4) {score += 10000;} 
+    if (good == 3 && empty == 1){score += 50;}
+    if (good == 2 && empty == 2){score += 20;}
+
+    if (bad == 2 && empty == 2){score -= 21;}
+    if (bad == 3 && empty == 1){score -= 501;}
+    if (bad == 4){score -= 0000;}
+
+    return score;
+}
+
+int aiBoardEval(std::string& state){
+    int score = 0;
+    //bias for center
+    for (int y = 0; y < 6; ++y) {
+        if (state[y * 7 + 3] == '2') score += 30; 
+        else if (state[y * 7 + 3] == '1') score -= 30; 
+    }
+
+    //horizontal
+    for (int y = 0; y < 6; ++y) {
+        for (int x = 0; x < 4; ++x) {
+            score += calculateScore(y, x, state, 0, 1); 
+        }
+    }
+
+    //vertical 
+    for (int x = 0; x < 7; ++x) {
+        for (int y = 0; y < 3; ++y) {
+            score += calculateScore(y, x, state, 1, 0);
+        }
+    }
+
+    //diagonal
+    for (int y = 0; y < 3; ++y) {
+        for (int x = 0; x < 4; ++x) {
+            score += calculateScore(y, x, state, 1, 1); 
+        }
+        for (int x = 3; x < 7; ++x) {
+            score += calculateScore(y, x, state, 1, -1); 
+        }
+    }
     
+    return score;
+}
+
+int ConnectFour::negamax(std::string& state, int depth, int alpha, int beta, int playerColor){
+    int eval = aiBoardEval(state);
+    if(std::abs(eval) >= 100000 || depth == 0){
+        return playerColor * eval;
+    }
+    
+    if (state.find('0') == std::string::npos) return 0;
+
+    int bestVal = -1000000;
+
+    for (int i = 0; i < 7; ++i){
+        int moveIndex = -1;
+        for (int y = 5; y >= 0; --y) {
+        if (state[y * 7 + i] == '0') {
+            moveIndex = y * 7 + i;
+            break;
+        }
+    }
+        if(moveIndex != -1 &&state[moveIndex] == '0'){
+            state[moveIndex] = playerColor == HUMAN_PLAYER ? '1' : '2';
+            int newVal = -negamax(state, depth - 1, -beta, -alpha, -playerColor);
+            state[moveIndex] = '0';
+            if (newVal > bestVal){
+                bestVal = newVal;
+            }     
+        
+            alpha = std::max(alpha, bestVal);
+            if (alpha >=beta){
+                break;
+            }
+        }
+    }
+    return bestVal;
 }
