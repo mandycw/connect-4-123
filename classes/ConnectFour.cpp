@@ -81,7 +81,6 @@ Player *ConnectFour::ownerAt(int index) const{
 }
 
 Player *ConnectFour::checkForWinner(){
-
     
     for (int y = 0; y < 6 ; ++y){
         for (int x = 0; x < 4; ++x){
@@ -152,7 +151,6 @@ std::string ConnectFour::stateString(){
 
 void ConnectFour::setStateString(const std::string &s){
     return;
-    
 }
 
 void ConnectFour::updateAI(){
@@ -174,7 +172,7 @@ void ConnectFour::updateAI(){
         if(moveIndex != -1 && state[moveIndex] == '0'){
             //try the move
             state[moveIndex] = '2';
-            int newVal = -negamax(state, 6, -1000000, 1000000, HUMAN_PLAYER);
+            int newVal = -negamax(state, 5, -1000000, 1000000, HUMAN_PLAYER);
             //backtrack
             state[moveIndex] = '0';
             if (newVal > bestVal){

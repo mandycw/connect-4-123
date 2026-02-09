@@ -42,6 +42,7 @@ struct GameOptions
 	int AIDepthSearches;
 	int AIMAXDepth;
 	bool AIvsAI;
+	bool AIP1 = false;
 };
 
 class Game

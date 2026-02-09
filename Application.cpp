@@ -42,6 +42,9 @@ namespace ClassGame {
                         game->setUpBoard();
                         gameOver = false;
                         gameWinner = -1;
+                        if(game->_gameOptions.AIP1){
+                            game->setAIPlayer(0);
+                        }
                     }
                 }
                 if (!game) {
@@ -70,7 +73,8 @@ namespace ClassGame {
                     if (ImGui::Button("Start Connect 4: AI[P1] vs. Player[P2]")){
                         game = new ConnectFour();
                         game->setUpBoard();
-                        game->setAIPlayer(0);
+                        game->setAIPlayer(0);  
+                        game->_gameOptions.AIP1 = true;
                     }
                 } else {
                     ImGui::Text("Current Player Number: %d", game->getCurrentPlayer()->playerNumber());
