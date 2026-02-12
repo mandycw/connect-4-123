@@ -37,11 +37,13 @@ bool ConnectFour::actionForEmptyHolder(BitHolder &holder){
     for(int y = 5; y >=0; y--){
         //if empty
         ChessSquare *square = _grid->getSquare(x, y);
+        ChessSquare *topsquare = _grid->getSquare(x, 0);
         //place piece
         if(square && !square->bit()){
             Bit *bit = PieceForPlayer(getCurrentPlayer()->playerNumber() == 0 ? HUMAN_PLAYER : AI_PLAYER);
             if (bit){
-                bit->setPosition(square->getPosition());
+                bit->setPosition(topsquare->getPosition());
+                bit->moveTo(square->getPosition());
                 square->setBit(bit);
                 endTurn();
                 return true;
@@ -49,8 +51,11 @@ bool ConnectFour::actionForEmptyHolder(BitHolder &holder){
             return false;
         }
     }
+    
+    
     return false;
 }
+
     
 
 bool ConnectFour::canBitMoveFrom(Bit &bit, BitHolder &src)
@@ -153,6 +158,7 @@ void ConnectFour::setStateString(const std::string &s){
     return;
 }
 
+
 void ConnectFour::updateAI(){
     BitHolder* bestMove = nullptr;
     std::string state = stateString();
@@ -166,13 +172,13 @@ void ConnectFour::updateAI(){
             if (state[y * 7 + i] == '0') {
                 moveIndex = y * 7 + i;
                 break;
+            }
         }
-    }
         //if we found a valid move, check it
         if(moveIndex != -1 && state[moveIndex] == '0'){
             //try the move
             state[moveIndex] = '2';
-            int newVal = -negamax(state, 5, -1000000, 1000000, HUMAN_PLAYER);
+            int newVal = -negamax(state, 6, -1000000, 1000000, HUMAN_PLAYER);
             //backtrack
             state[moveIndex] = '0';
             if (newVal > bestVal){
@@ -269,27 +275,27 @@ int ConnectFour::negamax(std::string& state, int depth, int alpha, int beta, int
     for (int i = 0; i < 7; ++i){
         int moveIndex = -1;
         for (int y = 5; y >= 0; --y) {
-        if (state[y * 7 + i] == '0') {
-            moveIndex = y * 7 + i;
-            break;
-        }
-    }
-        
-        if(moveIndex != -1 &&state[moveIndex] == '0'){
-            state[moveIndex] = playerColor == HUMAN_PLAYER ? '1' : '2';
-            //flip playercolor and negate score for opps perspective
-            int newVal = -negamax(state, depth - 1, -beta, -alpha, -playerColor);
-            //backtrack
-            state[moveIndex] = '0';
-            if (newVal > bestVal){
-                bestVal = newVal;
-            }     
-            //alpha beta pruning
-            alpha = std::max(alpha, bestVal);
-            if (alpha >=beta){
+            if (state[y * 7 + i] == '0') {
+                moveIndex = y * 7 + i;
                 break;
-            }
+                }
         }
+        
+            if(moveIndex != -1 &&state[moveIndex] == '0'){
+                state[moveIndex] = playerColor == HUMAN_PLAYER ? '1' : '2';
+                //flip playercolor and negate score for opps perspective
+                int newVal = -negamax(state, depth - 1, -beta, -alpha, -playerColor);
+                //backtrack
+                state[moveIndex] = '0';
+                if (newVal > bestVal){
+                    bestVal = newVal;
+                }     
+                //alpha beta pruning
+                alpha = std::max(alpha, bestVal);
+                if (alpha >=beta){
+                    break;
+                }
+            }
     }
     return bestVal;
 }
